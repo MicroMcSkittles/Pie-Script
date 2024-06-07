@@ -5,7 +5,7 @@
 int main() {
 	
 	// This is VERY temporary
-	std::string source = LoadFileFromPath("scripts/ExampleProgram.ps");
+	std::string source = LoadFileFromPath("scripts/ExampleProgram.pie");
 	std::cout << source << std::endl << std::endl;
 
 	std::vector<Token> token_list = Tokenize(source);
