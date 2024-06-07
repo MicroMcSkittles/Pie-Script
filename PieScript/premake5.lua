@@ -7,14 +7,14 @@ project "PieScript"
     objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
     files {
-        "%{prj.name}/src/**.c",
-        "%{prj.name}/src/**.h",
-        "%{prj.name}/src/**.cpp",
-        "%{prj.name}/src/**.hpp"
+        "src/**.c",
+        "src/**.h",
+        "src/**.cpp",
+        "src/**.hpp"
     }
 
     includedirs {
-        "%{prj.name}/src"
+        "src"
     }
 
     filter "system:windows"

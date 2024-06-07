@@ -1,0 +1,59 @@
+A more formal version of this file will be created in the future.
+
+Expressions ============================================================
+
+    Expressions represent values.
+
+    Numeric
+        Supported symbols
+            + Add
+            - Subtract
+            * Multiply
+            / Divide
+            & And
+            | Or
+            % Modulus
+            ^ Exponent 
+            ! Factorial
+
+        These operations can only be used with numeric values. Most operations require two numbers except
+        for the factorial and subtract operations. The subtract operation can be placed behind a numeric
+        value to show that it's negative or used to subtract to numbers. The factorial operation can be 
+        placed after a numaric value to find it's factorial.
+
+    Boolean
+        Supported symbols
+            && And
+            || Or
+            == Equal
+            != Not Equal
+            >= Grater than or Equal
+            <= Less than or Equal
+
+        All of these operations require two values to functions. Boolean operations can use both boolean 
+        values and numaric values. Boolean operations only return boolean values. If a numaric value is compaired
+        to a boolean value with a boolean operation then the numaric value will be converted to a boolean value 
+        based on if the numaric value is grater than zero. Ex: 0 = false, 3 = true, 10 = true
+
+    String
+        Supported symbols
+            + Add
+
+        A string needs to be the left value to use the add operation. Adding a string to a string combines
+        the strings into one new string. Adding a number to the string puts the number on the end of the 
+        string. Adding a boolean to the string puts ether true or false of the end of the string based
+        on the boolean.
+
+Variables ==============================================================
+
+    Variables are used to store values. They can be defined in three ways
+
+    var _NAME_ = _EXPRESSION_   Stores value into variable, automaticly detects type.
+    var _NAME_                  Creates empty variable with no type. Can't be used until set with expression.
+    var _NAME_ : _TYPE_         Creates empty variable with a type. Can't be used until set with expression of specified type.
+
+Structures =============================================================
+
+Lists ==================================================================
+
+Functions ==============================================================
