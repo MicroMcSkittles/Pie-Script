@@ -7,7 +7,7 @@ The Tokenizer is the first step in processing source code.
 
 ![Tokenizer Diagram](../MarkDownAssets/TokenizerDiagram.png)
 
-The tokenizer takes in source code and creates a list of tokens. A example is shown above.
+The tokenizer takes in source code and creates a list of tokens. A example is shown above. These tokens then get passed into the [Parser](https://en.wikipedia.org/wiki/Lexical_analysis)
 
 ## Tokens
 Tokens represent the source code in a way the [parser](./Parser.md) can understand. Tokens also store a index into the source code at where they start and end.

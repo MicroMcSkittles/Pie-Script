@@ -2,6 +2,7 @@
 
 std::map<TokenType, std::string> TokenTypeStrings = {
 	{TokenType::None, "None"},
+	{TokenType::EndLine, "End Line"},
 	{TokenType::NumericLiteral, "Numeric Literal"},
 	{TokenType::StringLiteral, "String Literal"},
 	{TokenType::Identifier, "Identifier"},
