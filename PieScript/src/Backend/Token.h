@@ -24,13 +24,14 @@ extern std::map<std::string, TokenType> Keywords;
 
 // Stores were a token is
 struct Location {
-	uint32_t start;			 // Index into line at start of token file used for error handling.
-	uint32_t end;			 // Index into line at end of token file used for error handling.
-	std::string line;		 // The line the token is on
+	uint32_t start;			 // Index into source at start of token, used for error handling.
+	uint32_t end;			 // Index into source at end of token, used for error handling.
+	uint32_t line_start;	 // Index into line at start of token file used for error handling.
+	uint32_t line_end;	     // Index into line at end of token file used for error handling.
 	uint32_t line_index;	 // Were the line is in source
 
-	Location(uint32_t start, uint32_t end, std::string line, uint32_t line_index)
-		: start(start), end(end), line(line), line_index(line_index) { }
+	Location(uint32_t start, uint32_t end, uint32_t line_start, uint32_t line_end, uint32_t line_index)
+		: start(start), end(end), line_start(line_start), line_end(line_end), line_index(line_index) { }
 };
 
 struct Token {
@@ -46,7 +47,9 @@ struct Token {
 			ss << "{ " 
 				<< TokenTypeStrings[type] << ", " 
 				<< debug_value
-				<< " }: loc { "
+				<< " }: loc L { "
+				<< location.line_start << ", " << location.line_end << " }"
+				<< ", S { "
 				<< location.start << ", " << location.end << " }";
 			return ss.str();
 		}
@@ -54,7 +57,9 @@ struct Token {
 			std::stringstream ss;
 			ss << "{ "
 				<< TokenTypeStrings[type]
-				<< " }: loc { "
+				<< " }: loc L { "
+				<< location.line_start << ", " << location.line_end << " }"
+				<< ", S { "
 				<< location.start << ", " << location.end << " }";
 			return ss.str();
 		}

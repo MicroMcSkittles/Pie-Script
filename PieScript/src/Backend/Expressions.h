@@ -25,6 +25,11 @@ public:
 
 	// Converts statement to string. indent is used for indenting. 
 	virtual std::string to_string(std::string indent) override;
+
+	bool IsInt() { return m_Type == Int; }
+	bool IsDouble() { return m_Type == Double; }
+	const std::string& GetValue() const { return m_Value; }
+
 private:
 	NumericLiteralExpr(std::string Value, uint32_t StartIndex, uint32_t EndIndex);
 
@@ -33,6 +38,15 @@ private:
 	uint32_t m_StartIndex;
 	// The end index location in source code
 	uint32_t m_EndIndex;
+
+	// Is the number a Float, Double, or Int
+	enum {
+		None = 0,
+		Int,
+		Float,
+		Double
+	};
+	int m_Type;
 
 	// The number stored as a string.
 	std::string m_Value;
@@ -50,6 +64,9 @@ public:
 
 	// Converts statement to string. indent is used for indenting. 
 	virtual std::string to_string(std::string indent) override;
+
+	const std::string& GetValue() const { return m_Value; }
+
 private:
 	StringLiteralExpr(std::string Value, std::string DebugValue, uint32_t StartIndex, uint32_t EndIndex);
 

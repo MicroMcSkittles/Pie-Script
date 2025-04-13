@@ -8,7 +8,10 @@ Ref<NumericLiteralExpr> NumericLiteralExpr::Create(std::string Value, uint32_t S
 }
 
 NumericLiteralExpr::NumericLiteralExpr(std::string Value, uint32_t StartIndex, uint32_t EndIndex)
-	: m_Value(Value), m_StartIndex(StartIndex), m_EndIndex(EndIndex) { }
+	: m_Value(Value), m_StartIndex(StartIndex), m_EndIndex(EndIndex) { 
+	if (m_Value.find('.') != std::string::npos) m_Type = Double;
+	else m_Type = Int;
+}
 NumericLiteralExpr::~NumericLiteralExpr()
 {
 }
@@ -28,7 +31,7 @@ std::string NumericLiteralExpr::to_string(std::string indent)
 
 	ss << indent << "Numeric Literal Expression {\n";
 	ss << indent + TabIndent << "Location { " << m_StartIndex << ", " << m_EndIndex << " }\n";
-	ss << indent + TabIndent << m_Value << "\n";
+	ss << indent + TabIndent << "" << m_Value << "\n";
 	ss << indent << "}";
 	return ss.str();
 }

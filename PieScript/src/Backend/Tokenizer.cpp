@@ -1,4 +1,5 @@
 #include "Tokenizer.h"
+#include "ErrorHandler.h"
 
 std::string TokenListToString(std::vector<Token> token_list)
 {
@@ -14,33 +15,9 @@ std::string TokenListToString(std::vector<Token> token_list)
 	return ss.str();
 }
 
-// Creates error messages
-std::string GenerateErrorMsg(const std::string& error, Location loc) {
-	std::stringstream error_stream;
-
-	error_stream << (loc.line_index + 1) << ") ";
-	int line_offset = error_stream.str().size();
-	error_stream << loc.line << '\n';
-	for (uint32_t i = 0; i < loc.line.size() + line_offset; ++i) {
-		if (i == loc.start + line_offset || i == loc.end + line_offset) {
-			error_stream << "^";
-		}
-		else if (loc.start + line_offset < i && i < loc.end + line_offset) {
-			error_stream << "=";
-		}
-		else {
-			error_stream << "-";
-		}
-	}
-	error_stream << '\n';
-	error_stream << error;
-
-	return error_stream.str();
-}
-
 using ReturnValue = std::pair<std::vector<Token>, std::string>;
 
-std::pair<std::vector<Token>, std::string> Tokenize(std::string source)
+ReturnValue Tokenize(std::string source)
 {
 	std::stringstream source_stream(source);
 
@@ -73,14 +50,19 @@ std::pair<std::vector<Token>, std::string> Tokenize(std::string source)
 				// Skip the rest of the characters on current line
 				break;
 			}
+			
+			// Check if current char is white space
+			else if (isspace(current_char)) {
+				continue;
+			}
 
 			// Check if current char is a binary expression
-			else if (current_char == '+' || current_char == '-' || current_char == '^' ||
+			else if (current_char == '+' || current_char == '-' || current_char == '^' || 
 				current_char == '*' || current_char == '/' || current_char == '%') {
 				// Push binary operation token to token list
 				token_list.push_back(Token(
 					TokenType::BinaryOperation,
-					Location(char_index, char_index, current_line, line_index),
+					Location(source_index_offset + char_index, source_index_offset + char_index, char_index, char_index, line_index),
 					std::string(1, current_char)
 				));
 			}
@@ -88,21 +70,21 @@ std::pair<std::vector<Token>, std::string> Tokenize(std::string source)
 				// Push equal token to token list
 				token_list.push_back(Token(
 					TokenType::Equals,
-					Location(char_index, char_index, current_line, line_index)
+					Location(source_index_offset + char_index, source_index_offset + char_index, char_index, char_index, line_index)
 				));
 			}
 			else if (current_char == '(') {
 				// Push open peren token to token list
 				token_list.push_back(Token(
 					TokenType::OpenPeren,
-					Location(char_index, char_index, current_line, line_index)
+					Location(source_index_offset + char_index, source_index_offset + char_index, char_index, char_index, line_index)
 				));
 			}
 			else if (current_char == ')') {
 				// Push close peren token to token list
 				token_list.push_back(Token(
 					TokenType::ClosePeren,
-					Location(char_index, char_index, current_line, line_index)
+					Location(source_index_offset + char_index, source_index_offset + char_index, char_index, char_index, line_index)
 				));
 			}
 
@@ -114,9 +96,9 @@ std::pair<std::vector<Token>, std::string> Tokenize(std::string source)
 				if (char_index >= current_line.size()) {
 
 					//Handle Error
-					return ReturnValue({ }, GenerateErrorMsg(
+					return ReturnValue({ }, GenerateTokenErrorMsg(
 						"Unexpected quotation character", 
-						{ start_index, start_index, current_line, line_index }));
+						{ source_index_offset + start_index, source_index_offset + start_index, start_index, start_index, line_index }));
 				}
 				current_char = current_line[char_index];
 
@@ -136,9 +118,9 @@ std::pair<std::vector<Token>, std::string> Tokenize(std::string source)
 					last_char = current_char;
 					if (char_index == current_line.size()) {
 						//Handle Error
-						return ReturnValue({ }, GenerateErrorMsg(
+						return ReturnValue({ }, GenerateTokenErrorMsg(
 							"Expected quotation character",
-							{ start_index, char_index - 1, current_line, line_index }));
+							{ source_index_offset + start_index, source_index_offset + (char_index - 1), start_index, char_index - 1, line_index }));
 					}
 						
 					current_char = current_line[char_index];
@@ -147,7 +129,7 @@ std::pair<std::vector<Token>, std::string> Tokenize(std::string source)
 				// Push string token to token list
 				Token tk = Token(
 					TokenType::StringLiteral,
-					Location(start_index, current_char, current_line, line_index),
+					Location(source_index_offset + start_index, source_index_offset + char_index, start_index, char_index, line_index),
 					string_literal
 				);
 				tk.debug_value = debug_string_literal;
@@ -155,10 +137,20 @@ std::pair<std::vector<Token>, std::string> Tokenize(std::string source)
 			}
 			// Check if current char is numeric
 			else if (isdigit(current_char)) {
-				int start_index = char_index;
+				uint32_t start_index = char_index;
 
+				bool period_flag = false;
 				std::string numeric_literal;
-				while (isdigit(current_char) && char_index != current_line.size()) {
+				while ((isdigit(current_char) || current_char == '.') && char_index != current_line.size()) {
+					
+					// If theres more then one period then call an error
+					if (current_char == '.' && period_flag == false) period_flag = true;
+					else if (current_char == '.' && period_flag) {
+						return ReturnValue({ }, GenerateTokenErrorMsg(
+							"Unexpected period",
+							{ source_index_offset + char_index, source_index_offset + char_index, char_index, char_index, line_index }));
+					}
+
 					numeric_literal.push_back(current_char);
 					char_index += 1;
 					current_char = current_line[char_index];
@@ -168,7 +160,7 @@ std::pair<std::vector<Token>, std::string> Tokenize(std::string source)
 				// Push numeric token to token list
 				token_list.push_back(Token(
 					TokenType::NumericLiteral,
-					Location(start_index, current_char, current_line, line_index),
+					Location(source_index_offset + start_index, source_index_offset + char_index, start_index, char_index, line_index),
 					numeric_literal
 				));
 			}
@@ -189,21 +181,27 @@ std::pair<std::vector<Token>, std::string> Tokenize(std::string source)
 					// Push keyword to token list
 					token_list.push_back(Token(
 						Keywords[identifier],
-						Location(start_index, current_char, current_line, line_index)
+						Location(source_index_offset + start_index, source_index_offset + char_index, start_index, char_index, line_index)
 					));
 				}
 				else {
 					// Push numeric token to token list
 					token_list.push_back(Token(
 						TokenType::Identifier,
-						Location(start_index, current_char, current_line, line_index),
+						Location(source_index_offset + start_index, source_index_offset + char_index, start_index, char_index, line_index),
 						identifier
 					));
 				}
 			}
+			// Create error message if char is not recognized
+			else {
+				return ReturnValue({ }, GenerateTokenErrorMsg(
+					"Unknown character",
+					{ source_index_offset + char_index, source_index_offset + char_index, char_index, char_index, line_index }));
+			}
 		}
 		
-		source_index_offset += current_line.size();
+		source_index_offset += current_line.size() + 1;
 	}
 
 	return std::pair<std::vector<Token>, std::string>(token_list, error);

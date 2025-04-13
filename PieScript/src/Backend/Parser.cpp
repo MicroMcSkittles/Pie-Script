@@ -1,4 +1,5 @@
 #include "Parser.h"
+#include "ErrorHandler.h"
 
 std::pair<Ref<Expression>, std::string> ParseLiteral(TokenConsumer& TC) {
 	// Get current token
@@ -14,7 +15,7 @@ std::pair<Ref<Expression>, std::string> ParseLiteral(TokenConsumer& TC) {
 		if (TC.TokenList.size() - 1 == TC.CurrentIndex) {
 			return {
 				Ref<Expression>(),
-				GenerateErrorMsg("Unexpected open parenthesis", tk.location)
+				GenerateTokenErrorMsg("Unexpected open parenthesis", tk.location)
 			};
 		}
 		TC.CurrentIndex += 1;
@@ -24,14 +25,15 @@ std::pair<Ref<Expression>, std::string> ParseLiteral(TokenConsumer& TC) {
 		if (!error.empty()) return { Ref<Expression>(), error };
 
 		// Check if peren is valid
-		if (TC.TokenList.size() - 1 == TC.CurrentIndex) {
+		if ((TC.TokenList.size() - 1 == TC.CurrentIndex) || (TC.TokenList[TC.CurrentIndex + 1].type != TokenType::ClosePeren)) {
 			return {
 				Ref<Expression>(),
-				GenerateErrorMsg("Expected close parenthesis", 
+				GenerateTokenErrorMsg("Expected close parenthesis",
 					{
 						tk.location.start,
 						TC.TokenList[TC.CurrentIndex].location.start,
-						tk.location.line,
+						tk.location.line_start,
+						TC.TokenList[TC.CurrentIndex].location.line_start,
 						tk.location.line_index
 					})
 			};
@@ -43,7 +45,7 @@ std::pair<Ref<Expression>, std::string> ParseLiteral(TokenConsumer& TC) {
 	default: {
 		return {
 				Ref<Expression>(),
-				GenerateErrorMsg("Unknown token", tk.location)
+				GenerateTokenErrorMsg("Unknown token", tk.location)
 		};
 	}
 	}
@@ -59,7 +61,8 @@ std::pair<Ref<Expression>, std::string> ParseMultiplicativeExpr(TokenConsumer& T
 		   TC.TokenList[TC.CurrentIndex + 1].type == TokenType::BinaryOperation &&
 		  (TC.TokenList[TC.CurrentIndex + 1].value == "*" ||
 		   TC.TokenList[TC.CurrentIndex + 1].value == "/" || 
-		   TC.TokenList[TC.CurrentIndex + 1].value == "%")) {
+		   TC.TokenList[TC.CurrentIndex + 1].value == "%" ||
+		   TC.TokenList[TC.CurrentIndex + 1].value == "^")) {
 		// Get operator
 		TC.CurrentIndex += 1;
 		std::string oper = TC.TokenList[TC.CurrentIndex].value;
@@ -68,7 +71,7 @@ std::pair<Ref<Expression>, std::string> ParseMultiplicativeExpr(TokenConsumer& T
 		if (TC.TokenList.size() - 1 == TC.CurrentIndex) {
 			return {
 				Ref<Expression>(),
-				GenerateErrorMsg("Unexpected binary operator", TC.TokenList[TC.CurrentIndex].location)
+				GenerateTokenErrorMsg("Unexpected binary operator", TC.TokenList[TC.CurrentIndex].location)
 			};
 		}
 		TC.CurrentIndex += 1;
@@ -102,7 +105,7 @@ std::pair<Ref<Expression>, std::string> ParseAdditiveExpr(TokenConsumer& TC) {
 		if (TC.TokenList.size() - 1 == TC.CurrentIndex) {
 			return {
 				Ref<Expression>(),
-				GenerateErrorMsg("Unexpected binary operator", TC.TokenList[TC.CurrentIndex].location)
+				GenerateTokenErrorMsg("Unexpected binary operator", TC.TokenList[TC.CurrentIndex].location)
 			};
 		}
 		TC.CurrentIndex += 1;
